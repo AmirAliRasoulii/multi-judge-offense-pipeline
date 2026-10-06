@@ -1,0 +1,41 @@
+test_ambiguous_multiple_objects_fail (test_pipeline.Decisions.test_ambiguous_multiple_objects_fail) ... ok
+test_bad_probability_and_unknown_keys_fail (test_pipeline.Decisions.test_bad_probability_and_unknown_keys_fail) ... ok
+test_boolean_and_string_labels_fail (test_pipeline.Decisions.test_boolean_and_string_labels_fail) ... ok
+test_budget_is_threadsafe_and_counts_calls (test_pipeline.Decisions.test_budget_is_threadsafe_and_counts_calls) ... ok
+test_cache_depends_on_prompt_context_model_not_key (test_pipeline.Decisions.test_cache_depends_on_prompt_context_model_not_key) ... ok
+test_context_low_confidence_blocks (test_pipeline.Decisions.test_context_low_confidence_blocks) ... ok
+test_duplicate_json_key_rejected (test_pipeline.Decisions.test_duplicate_json_key_rejected) ... ok
+test_educational_flag_blocks (test_pipeline.Decisions.test_educational_flag_blocks) ... ok
+test_evidence_must_be_in_target_for_positive (test_pipeline.Decisions.test_evidence_must_be_in_target_for_positive) ... ok
+test_failed_fourth_is_not_zero (test_pipeline.Decisions.test_failed_fourth_is_not_zero) ... ok
+test_nan_json_rejected (test_pipeline.Decisions.test_nan_json_rejected) ... ok
+test_positive_subtype_disagreement_blocks (test_pipeline.Decisions.test_positive_subtype_disagreement_blocks) ... ok
+test_prefix_and_fenced_json (test_pipeline.Decisions.test_prefix_and_fenced_json) ... ok
+test_quotation_blocked_even_unanimous (test_pipeline.Decisions.test_quotation_blocked_even_unanimous) ... ok
+test_refusal_or_truncation_not_valid (test_pipeline.Decisions.test_refusal_or_truncation_not_valid) ... ok
+test_responses_typed_output (test_pipeline.Decisions.test_responses_typed_output) ... ok
+test_route_parameters (test_pipeline.Decisions.test_route_parameters) ... ok
+test_think_json_is_not_a_vote (test_pipeline.Decisions.test_think_json_is_not_a_vote) ... ok
+test_three_votes_are_candidate_and_default_silver (test_pipeline.Decisions.test_three_votes_are_candidate_and_default_silver) ... ok
+test_tie_abstention_missing_never_zero (test_pipeline.Decisions.test_tie_abstention_missing_never_zero) ... ok
+test_auth_failure_stops_and_is_preserved (test_pipeline.EndToEnd.test_auth_failure_stops_and_is_preserved) ... ok
+test_budget_partial_export_then_resume (test_pipeline.EndToEnd.test_budget_partial_export_then_resume) ... ok
+test_config_four_distinct_and_extra_guard (test_pipeline.EndToEnd.test_config_four_distinct_and_extra_guard) ... ok
+test_demo_colors_formula_safety_and_review_zero (test_pipeline.EndToEnd.test_demo_colors_formula_safety_and_review_zero) ... ok
+test_failed_votes_require_explicit_retry (test_pipeline.EndToEnd.test_failed_votes_require_explicit_retry) ... ok
+test_foreign_review_rejected_before_any_write (test_pipeline.EndToEnd.test_foreign_review_rejected_before_any_write) ... ok
+test_input_preservation_and_duplicate_ids (test_pipeline.EndToEnd.test_input_preservation_and_duplicate_ids) ... ok
+test_invalid_response_retry_saved (test_pipeline.EndToEnd.test_invalid_response_retry_saved) ... ok
+test_long_text_stays_in_json_and_review_can_import (test_pipeline.EndToEnd.test_long_text_stays_in_json_and_review_can_import) ... ok
+test_resume_duplicate_and_manifest_no_key (test_pipeline.EndToEnd.test_resume_duplicate_and_manifest_no_key) ... ok
+
+----------------------------------------------------------------------
+Ran 30 tests in 3.681s
+
+OK
+Annotated 1/12 records; completed votes are checkpointed.
+Annotated 10/12 records; completed votes are checkpointed.
+Annotated 12/12 records; completed votes are checkpointed.
+Annotated 1/12 records; completed votes are checkpointed.
+Annotated 10/12 records; completed votes are checkpointed.
+Annotated 12/12 records; completed votes are checkpointed.

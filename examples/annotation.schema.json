@@ -1,0 +1,161 @@
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "label": {
+      "type": [
+        "integer",
+        "null"
+      ],
+      "enum": [
+        0,
+        1,
+        null
+      ]
+    },
+    "p_offensive_raw": {
+      "type": [
+        "number",
+        "null"
+      ],
+      "minimum": 0,
+      "maximum": 1
+    },
+    "abuse_types": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "enum": [
+          "profanity_use",
+          "insult",
+          "derogatory_mockery",
+          "hate_speech"
+        ]
+      }
+    },
+    "target_types": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "enum": [
+          "individual",
+          "group_identity",
+          "other_group",
+          "self",
+          "none",
+          "unclear"
+        ]
+      }
+    },
+    "target_basis": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "enum": [
+          "ethnicity",
+          "nationality",
+          "race",
+          "religion",
+          "gender",
+          "sexual_orientation",
+          "disability",
+          "age",
+          "caste",
+          "political_affiliation",
+          "profession",
+          "other_identity",
+          "not_identity",
+          "none",
+          "unknown"
+        ]
+      }
+    },
+    "discourse_tags": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "enum": [
+          "quotation",
+          "reported_speech",
+          "educational",
+          "counterspeech",
+          "reclaimed",
+          "humor",
+          "criticism",
+          "untargeted_profanity",
+          "code_switching",
+          "obfuscated"
+        ]
+      }
+    },
+    "expression": {
+      "type": "string",
+      "enum": [
+        "explicit",
+        "implicit",
+        "mixed",
+        "none",
+        "unclear"
+      ]
+    },
+    "speaker_stance": {
+      "type": "string",
+      "enum": [
+        "attack",
+        "endorse",
+        "reject",
+        "report",
+        "explain",
+        "neutral",
+        "unclear"
+      ]
+    },
+    "profanity_present": {
+      "type": "boolean"
+    },
+    "needs_context": {
+      "type": "boolean"
+    },
+    "evidence": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "text": {
+            "type": "string"
+          },
+          "kind": {
+            "type": "string",
+            "enum": [
+              "abuse",
+              "usage_context",
+              "target"
+            ]
+          }
+        },
+        "required": [
+          "text",
+          "kind"
+        ]
+      }
+    },
+    "decision_reason": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "label",
+    "p_offensive_raw",
+    "abuse_types",
+    "target_types",
+    "target_basis",
+    "discourse_tags",
+    "expression",
+    "speaker_stance",
+    "profanity_present",
+    "needs_context",
+    "evidence",
+    "decision_reason"
+  ]
+}

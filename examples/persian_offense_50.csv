@@ -1,0 +1,51 @@
+id,text,context,language,source,english_original,expected_label
+fa-01,استدلال شما از نظر منطقی ضعیف است و منابع علمی ارائه نداده‌اید.,,fa,adapted_benchmarks,Your argument is logically flawed and lacks credible scientific sources.,0
+fa-02,من کاملاً با سیاست‌های اقتصادی جدید مخالفم چون تورم را بیشتر می‌کند.,,fa,adapted_benchmarks,I completely disagree with the new economic policy because it will worsen inflation.,0
+fa-03,فیلم‌نامه اثر کشش لازم را نداشت و بازی‌ها باورپذیر نبودند.,,fa,adapted_benchmarks,The script was poorly paced and the acting performances were unconvincing.,0
+fa-04,به نظرم این طراحی گرافیکی خیلی شلوغ و بدون هارمونی رنگ است.,,fa,adapted_benchmarks,In my opinion this graphic design is way too cluttered and lacks color harmony.,0
+fa-05,لطفاً به جای پرداختن به حواشی به اصل سوال پاسخ دهید.,,fa,adapted_benchmarks,Please answer the core question instead of dodging the topic.,0
+fa-06,کیفیت غذای این رستوران نسبت به قیمتش اصلاً مناسب نیست.,,fa,adapted_benchmarks,The quality of food at this restaurant does not justify the high prices.,0
+fa-07,این برنامه باگی در بخش ورود کاربران دارد که باید رفع شود.,,fa,adapted_benchmarks,This software has a bug in user authentication that needs to be fixed.,0
+fa-08,من سبک بازی این بازیکن را نمی‌پسندم ولی تلاشش قابل احترام است.,,fa,adapted_benchmarks,I don't like this player's style, but his effort is respectable.,0
+fa-09,مقاله شما نتیجه‌گیری شتاب‌زده‌ای دارد و نیاز به اصلاح دارد.,,fa,adapted_benchmarks,Your paper reaches hasty conclusions and requires substantial revision.,0
+fa-10,قیمت‌گذاری محصول برای بازار هدف فعلی توجیه اقتصادی ندارد.,,fa,adapted_benchmarks,Product pricing for the current target market lacks economic justification.,0
+fa-11,تو یک احمق بی‌سواد هستی که اصلاً چیزی حالیت نیست.,,fa,adapted_benchmarks,You are an illiterate idiot who has zero understanding of anything.,1
+fa-12,خفه شو الدنگ نفهم، کسی از تو نظر نخواست.,,fa,adapted_benchmarks,Shut up you clueless jerk, nobody asked for your opinion.,1
+fa-13,مرتیکه عوضی فکر کرده کیه که اینطوری حرف می‌زنه.,,fa,adapted_benchmarks,Who the hell does this bastard think he is talking to us like that?,1
+fa-14,حیف نون که تو می‌خوری، واقعاً مغزت قد نخوده.,,fa,adapted_benchmarks,You are a total waste of space, with a peanut-sized brain.,1
+fa-15,گمشو با این قیافه نحست، حالم ازت به هم می‌خوره.,,fa,adapted_benchmarks,Get lost with that ugly face of yours, you disgust me.,1
+fa-16,تو یک دزد بیشرفی که جیب مردم رو خالی می‌کنی.,,fa,adapted_benchmarks,You are a shameless thief who robs hard-working people.,1
+fa-17,یارو رسماً دیوونه و سادیسمیه، باید ببندنش به تخت.,,fa,adapted_benchmarks,This guy is a certified psychopath who should be locked up in an asylum.,1
+fa-18,دلقک دوزاری، انقدر زر نزن سر درد گرفتیم.,,fa,adapted_benchmarks,You cheap clown, stop blabbering nonsense, you're giving us a headache.,1
+fa-19,تو یه بازندهٔ حقیر و عقده‌ای بیشتر نیستی.,,fa,adapted_benchmarks,You are nothing but a pathetic, insecure loser.,1
+fa-20,مرده‌شور ترکیب نحست رو ببرن، خائن وطن‌فروش.,,fa,adapted_benchmarks,Damn your wretched face, you treacherous traitor.,1
+fa-21,خاک تو سرت کنن با این تحلیلت، گاو شعورش از تو بیشتره.,,fa,adapted_benchmarks,Shame on you for this analysis, a cow has more common sense than you.,1
+fa-22,بی‌بوتهٔ حروم‌لقمه، برو اول ادب یاد بگیر بعد بیا اینجا.,,fa,adapted_benchmarks,You vulgar scumbag, go learn some manners before posting here.,1
+fa-23,واقعاً نابغه‌ای! باز هم کل پروژه رو خراب کردی دستت درد نکنه.,پیام بعد از ایجاد اختلال در سرور,fa,adapted_benchmarks,What a genius! You managed to break the entire project again, brilliant job.,1
+fa-24,چقدر باهوشی ماشالله، دو دو تا رو کردی پنج تا!,در واکنش به اشتباه محاسباتی ساده,fa,adapted_benchmarks,So brilliant, mashallah, somehow you made two plus two equal five!,1
+fa-25,استاد اعظم، ممنون که با مغز متفکرت مارو مستفیض کردی.,در پاسخ به اظهار نظر پیش‌پاافتاده,fa,adapted_benchmarks,Oh grand master, thank you for blessing us with your massive intellect.,1
+fa-26,چشم نخوری با این راهکار قویت، دنیا رو نجات دادی واقعاً.,در واکنش به راه‌حل اشتباه,fa,adapted_benchmarks,Don't jinx yourself with that stellar advice, you truly saved humanity.,1
+fa-27,معلومه خیلی زحمت کشیدی، کپی پیست کردن دو خط متن خستت کرده.,در نقد کار بی‌کیفیت,fa,adapted_benchmarks,Clearly exhausted from all your hard work of copy-pasting two sentences.,1
+fa-28,جایزه نوبل کمته با این کشف بزرگت.,در پاسخ به بدیهیات,fa,adapted_benchmarks,A Nobel Prize isn't enough for such a groundbreaking discovery.,1
+fa-29,این جماعت فلان قوم کلاً وحشی و بی‌فرهنگ هستن.,,fa,adapted_benchmarks,These people of that specific ethnic group are completely uncivilized savages.,1
+fa-30,زن‌ها اصلاً عقل ندارن و نباید اجازه رانندگی بهشون داد.,,fa,adapted_benchmarks,Women have no brain and shouldn't ever be allowed to drive.,1
+fa-31,پیرمردهای خرفت زوال‌عقل‌گرفته باید از جامعه حذف بشن.,,fa,adapted_benchmarks,Demented old geezers should be purged from society.,1
+fa-32,پیروان این مذهب همه تروریست و خون‌خوارن.,,fa,adapted_benchmarks,Followers of this religion are all bloodthirsty terrorists.,1
+fa-33,دهاتی‌های بی‌کلاس فقط بلدن شهر رو خراب کنن.,,fa,adapted_benchmarks,Those uncultured hillbillies only know how to ruin the city.,1
+fa-34,افغانستانی‌ها رو باید ریخت تو دریا، همشون دردسرن.,,fa,adapted_benchmarks,Afghans should be thrown into the sea, all they bring is trouble.,1
+fa-35,لعنتی! اتوبوس درست جلوی چشمم رفت.,,fa,adapted_benchmarks,Damn it! The bus just pulled away right in front of me.,1
+fa-36,عجب شانس گندی دارم، بازم ماشین پنچر شد.,,fa,adapted_benchmarks,What rotten luck, my car got a flat tire again.,1
+fa-37,ریدم تو این هوای آلوده که نمی‌شه نفس کشید.,,fa,adapted_benchmarks,Screw this polluted smoggy air, you can't even breathe.,1
+fa-38,تف به این زندگی که هر چی می‌دوی به هیچی نمی‌رسی.,,fa,adapted_benchmarks,Curse this miserable life where no matter how hard you hustle you get nowhere.,1
+fa-39,ای بابا گندش بزنن، تمام فایل‌هام پرید.,,fa,adapted_benchmarks,Ugh damn it all, every single one of my files just got deleted.,1
+fa-40,دیروز یکی کامنت گذاشت و نوشت «تو یه آشغال حروم‌زاده‌ای»؛ واقعاً فضا مسموم شده.,گزارش آزار سایبری,fa,adapted_benchmarks,Yesterday someone commented 'You are a piece of trash bastard'; the internet has become toxic.,0
+fa-41,مدیر پیام داد: «اگر کار رو نرسونی احمقی» و این مصداق آزار شغلیه.,شکایت از محیط کار,fa,adapted_benchmarks,The manager texted: 'If you fail to deliver you are an idiot', which is workplace harassment.,0
+fa-42,شاهد عینی گفت راننده داد زد «مرتیکه کور مگه جلوی پات رو نمی‌بینی».,گزارش حادثه تصادف,fa,adapted_benchmarks,The eyewitness testified that the driver yelled 'Are you blind, watch where you're going'.,0
+fa-43,توی پیجش نوشته بود «مرگ بر مخالفین» و باید ریپورت بشه.,درخواست گزارش تخلف,fa,adapted_benchmarks,His page literally posted 'Death to dissidents' and needs to be reported.,0
+fa-44,آیا واژهٔ «دیوث» در ریشه‌شناسی لغوی بار توهین ناموسی دارد یا دشنام عامیانه است؟,,fa,adapted_benchmarks,Does the term 'dayyuth' have specific honor-insult etymology or is it generic vulgarity?,0
+fa-45,معنی اصطلاح عامیانه «خاک بر سر» در زبان فارسی چیست و چقدر رکیک محسوب می‌شود؟,,fa,adapted_benchmarks,What is the meaning and severity of the Persian colloquial idiom 'khak bar sar'?,0
+fa-46,چرا فحش «پدرسگ» در ادبیات محاوره‌ای شدت اهانت بالایی تلقی می‌شود؟,,fa,adapted_benchmarks,Why is the swear word 'pedarsag' considered severe in colloquial conversations?,0
+fa-47,توهین قومیتی خط قرمز ماست؛ لطفاً به جای فحاشی با استدلال حرف بزنید.,واکنش به کامنت‌های توهین‌آمیز,fa,adapted_benchmarks,Ethnic insults are our red line; please debate with arguments instead of hurling curses.,0
+fa-48,ما اجازه نمی‌دهیم با الفاظ رکیک کسی را در این گروه تحقیر کنید.,تذکر ادمین گروه,fa,adapted_benchmarks,We will not tolerate degrading anyone in this group using vulgar expressions.,0
+fa-49,فحاشی به زنان نشانه ضعف اخلاقیه و نباید عادی‌سازی بشه.,گفتگو درباره فرهنگ عمومی,fa,adapted_benchmarks,Misogynistic profanity reflects moral decay and must not be normalized.,0
+fa-50,خشونت کلامی هیچ مشکلی رو حل نمی‌کنه، احترام متقابل واجبه.,توصیه به حفظ آرامش,fa,adapted_benchmarks,Verbal violence never solves any problem; mutual respect is essential.,0

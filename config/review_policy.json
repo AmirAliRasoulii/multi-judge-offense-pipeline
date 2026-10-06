@@ -1,0 +1,10 @@
+{
+  "min_vote_confidence_raw": 0.70,
+  "audit_unanimous_rate": 0.02,
+  "review_minority_vote": true,
+  "block_minority_vote": false,
+  "sensitive_discourse_tags": ["quotation", "reported_speech", "educational", "counterspeech", "reclaimed"],
+  "block_sensitive_discourse": true,
+  "review_subtype_disagreement": true,
+  "block_subtype_disagreement": true
+}

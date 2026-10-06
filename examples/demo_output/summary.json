@@ -1,0 +1,32 @@
+{
+  "run_id": "5e0dc45a28aa0da081f49f24",
+  "records": 12,
+  "status_counts": {
+    "auto_accepted": 6,
+    "review_required": 3,
+    "tie": 1,
+    "ambiguous": 1,
+    "error": 1
+  },
+  "candidate_label_counts": {
+    "0": 7,
+    "1": 3,
+    "None": 2
+  },
+  "final_label_counts": {
+    "0": 4,
+    "1": 3,
+    "None": 5
+  },
+  "review_records": 6,
+  "blocking_records": 5,
+  "duplicate_records": 1,
+  "api_attempts": 44,
+  "usage_totals_as_reported": {
+    "prompt_tokens": 0,
+    "completion_tokens": 0,
+    "total_tokens": 0
+  },
+  "estimated_cost": null,
+  "note": "Raw scores are not calibrated. Token sums include retries; duplicate records reuse requests. No pricing assumed."
+}

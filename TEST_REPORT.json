@@ -1,0 +1,22 @@
+{
+  "software_version": "0.1.0",
+  "python": "3.12.14",
+  "openpyxl": "3.1.5",
+  "unit_tests_passed": 35,
+  "unit_tests_failed": 0,
+  "compile_check": "passed",
+  "cli_demo": "passed",
+  "cli_dry_run": "passed, 0 network calls",
+  "xlsx_visual_check": "Results A1:G9 inspected",
+  "offline_export_check": {
+    "records": 1000,
+    "vote_rows": 4000,
+    "xlsx_bytes": 513224,
+    "export_seconds": 2.83,
+    "process_peak_rss_kib": 51312,
+    "real_api_calls": 0,
+    "note": "Offline export check; not an API throughput estimate or full 20k load test."
+  },
+  "live_avalai_test": "not run: no API credentials/model IDs/private dataset supplied",
+  "private_dataset_processed": false
+}

@@ -1,0 +1,16 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "avalai-offense-pipeline"
+version = "0.1.0"
+requires-python = ">=3.10"
+dependencies = ["openpyxl>=3.1,<4"]
+description = "Four independent AvalAI judges, resumable annotation and review exports"
+
+[project.scripts]
+avalai-offense = "avalai_offense.cli:main"
+
+[tool.setuptools.packages.find]
+include = ["avalai_offense*"]

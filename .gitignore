@@ -1,0 +1,14 @@
+.env
+.env.*
+!.env.example
+outputs/
+__pycache__/
+*.pyc
+*.egg-info/
+.venv/
+openpyxl.*
+.tmp-*
+*.sqlite*
+.run.lock
+.pytest_cache/
+
