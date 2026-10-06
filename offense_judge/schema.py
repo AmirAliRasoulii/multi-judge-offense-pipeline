@@ -25,13 +25,50 @@ SCHEMA = {"type": "object", "additionalProperties": False, "properties": {
 SCHEMA["required"] = list(SCHEMA["properties"])
 
 
+COMPACT_PROPERTIES = {
+    "label": {"type": ["integer", "null"], "enum": [0, 1, None]},
+    "p_offensive_raw": {"type": ["number", "null"], "minimum": 0, "maximum": 1},
+    "abuse_types": {"type": "array", "items": {"type": "string", "enum": ENUMS["abuse_types"]}},
+    "discourse_tags": {"type": "array", "items": {"type": "string", "enum": ENUMS["discourse_tags"]}},
+    "profanity_present": {"type": "boolean"},
+    "needs_context": {"type": "boolean"},
+    "decision_reason": {"type": "string"},
+}
+COMPACT_SCHEMA = {
+    "type": "object",
+    "additionalProperties": False,
+    "properties": COMPACT_PROPERTIES,
+    "required": list(COMPACT_PROPERTIES.keys()),
+}
+
+
+def get_schema(detailed=True):
+    return SCHEMA if detailed else COMPACT_SCHEMA
+
+
 class InvalidResponse(ValueError):
     pass
 
 
-def validate(value):
-    if not isinstance(value, dict) or set(value) != set(SCHEMA["required"]):
-        raise InvalidResponse("JSON fields do not match schema")
+def validate(value, detailed=None):
+    if not isinstance(value, dict):
+        raise InvalidResponse("Expected JSON object")
+    if detailed is True:
+        if set(value) != set(SCHEMA["required"]):
+            raise InvalidResponse("JSON fields do not match schema")
+        is_detailed = True
+    elif detailed is False:
+        if not set(COMPACT_SCHEMA["required"]).issubset(set(value)) or not set(value).issubset(set(SCHEMA["properties"])):
+            raise InvalidResponse("JSON fields do not match schema")
+        is_detailed = set(value) == set(SCHEMA["required"])
+    else:
+        if set(value) == set(SCHEMA["required"]):
+            is_detailed = True
+        elif set(COMPACT_SCHEMA["required"]).issubset(set(value)) and set(value).issubset(set(SCHEMA["properties"])):
+            is_detailed = False
+        else:
+            raise InvalidResponse("JSON fields do not match schema")
+
     label = value["label"]
     if label is not None and (type(label) is not int or label not in (0, 1)):
         raise InvalidResponse("label must be integer 0, 1 or null")
@@ -40,29 +77,43 @@ def validate(value):
         raise InvalidResponse("p_offensive_raw must be a finite number in [0,1]")
     if (label is None) != (p is None):
         raise InvalidResponse("Unknown label requires null probability, known label requires probability")
+
+    # Validate present enums
     for name, allowed in ENUMS.items():
+        if name not in value:
+            continue
         item = value[name]
         if name in ("expression", "speaker_stance"):
             if not isinstance(item, str) or item not in allowed:
                 raise InvalidResponse(f"Invalid {name}")
         elif not isinstance(item, list) or any(not isinstance(x, str) or x not in allowed for x in item) or len(set(item)) != len(item):
             raise InvalidResponse(f"Invalid {name}")
+
     for name in ("profanity_present", "needs_context"):
         if type(value[name]) is not bool:
             raise InvalidResponse(f"{name} must be boolean")
     reason = value["decision_reason"]
     if not isinstance(reason, str) or not reason.strip() or len(reason) > 400:
         raise InvalidResponse("decision_reason must contain 1..400 characters")
-    evidence = value["evidence"]
-    if not isinstance(evidence, list) or len(evidence) > 12:
-        raise InvalidResponse("Invalid evidence array")
-    for item in evidence:
-        if not isinstance(item, dict) or set(item) != {"text", "kind"} or item["kind"] not in ("abuse", "usage_context", "target") or not isinstance(item["text"], str) or not item["text"] or len(item["text"]) > 500:
-            raise InvalidResponse("Invalid evidence item")
+
+    if "evidence" in value:
+        evidence = value["evidence"]
+        if not isinstance(evidence, list) or len(evidence) > 12:
+            raise InvalidResponse("Invalid evidence array")
+        for item in evidence:
+            if not isinstance(item, dict) or set(item) != {"text", "kind"} or item["kind"] not in ("abuse", "usage_context", "target") or not isinstance(item["text"], str) or not item["text"] or len(item["text"]) > 500:
+                raise InvalidResponse("Invalid evidence item")
+
+    # Populate defaults for downstream compatibility
+    value.setdefault("target_types", ["individual"] if label == 1 else ["none"])
+    value.setdefault("target_basis", ["not_identity"] if label == 1 else ["none"])
+    value.setdefault("expression", "explicit" if label == 1 else "none")
+    value.setdefault("speaker_stance", "attack" if label == 1 else "neutral")
+    value.setdefault("evidence", [])
     return value
 
 
-def parse_content(content):
+def parse_content(content, detailed=None):
     if not isinstance(content, str) or not content.strip():
         raise InvalidResponse("Empty textual response")
     # Preserve raw content elsewhere; do not parse objects from private think blocks.
@@ -106,7 +157,7 @@ def parse_content(content):
         raise InvalidResponse("Unexpected content after decision JSON")
     if obj.get("speaker_stance") in ("criticism", "critique"):
         obj["speaker_stance"] = "reject"
-    validate(obj)
+    validate(obj, detailed=detailed)
     before = prefix.strip() if marker in visible else body[:start].replace("```json", "").replace("```", "").strip()
     return obj, before
 
@@ -125,7 +176,7 @@ def decision_warnings(decision, record):
         warnings.append("score_label_conflict")
     if (label == 0 and decision["abuse_types"]) or (label == 1 and not decision["abuse_types"]):
         warnings.append("label_tag_conflict")
-    for e in decision["evidence"]:
+    for e in decision.get("evidence", []):
         hits = []
         for field in ("text", "context"):
             source = record.get(field, "")
@@ -141,12 +192,18 @@ def decision_warnings(decision, record):
         if not hits:
             warnings.append("evidence_not_found")
         locations.append({**e, "matches": hits})
-    if label == 1 and not any(e["kind"] == "abuse" and any(h["field"] == "text" for h in e["matches"]) for e in locations):
+    if label == 1 and bool(decision.get("evidence")) and not any(e["kind"] == "abuse" and any(h["field"] == "text" for h in e["matches"]) for e in locations):
         warnings.append("missing_target_text_abuse_evidence")
     return sorted(set(warnings)), locations
 
 
 def system_prompt(config, model):
-    output = ("پیش از JSON فقط یک جمله دلیل کوتاه بده، سپس خط FINAL_JSON: و بعد یک شیء JSON معتبر. مقادیر تمام فیلدها دقیقاً باید مطابق مقادیر مجاز (enum) اسکیما باشند. هیچ متن دیگری پس از آن نده."
-              if model.output_mode == "reasoning_json" else "فقط یک شیء JSON بده. مقادیر فیلدها باید دقیقاً مطابق enum اسکیما باشند. توضیح کوتاه را فقط در decision_reason بنویس.")
-    return config.prompt + "\n\n" + output + "\nJSON schema:\n" + dumps(SCHEMA)
+    detailed = getattr(config, "detailed_annotation", False)
+    schema = get_schema(detailed)
+    if detailed:
+        output = ("پیش از JSON فقط یک جمله دلیل کوتاه بده، سپس خط FINAL_JSON: و بعد یک شیء JSON معتبر با تمامی ۱۲ فیلد اسکیما. مقادیر تمام فیلدها دقیقاً باید مطابق مقادیر مجاز (enum) اسکیما باشند. هیچ متن دیگری پس از آن نده."
+                  if model.output_mode == "reasoning_json" else "فقط یک شیء JSON با تمامی ۱۲ فیلد اسکیما بده. مقادیر فیلدها باید دقیقاً مطابق enum اسکیما باشند. توضیح کوتاه را فقط در decision_reason بنویس.")
+    else:
+        output = ("پیش از JSON فقط یک جمله دلیل کوتاه بده، سپس خط FINAL_JSON: و بعد یک شیء JSON معتبر. فقط فیلدهای مشخص‌شده در اسکیما را بنویس و فیلد اضافی نده. مقادیر فیلدها دقیقاً مطابق enum اسکیما باشند."
+                  if model.output_mode == "reasoning_json" else "فقط یک شیء JSON شامل فیلدهای مقرر در اسکیما بده. مقادیر فیلدها باید دقیقاً مطابق enum اسکیما باشند.")
+    return config.prompt + "\n\n" + output + "\nJSON schema:\n" + dumps(schema)

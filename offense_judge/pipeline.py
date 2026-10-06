@@ -28,7 +28,7 @@ def judge(store, config, provider, model, record, retry_failed=False):
             attempt["usage"] = raw.get("usage", {}) if isinstance(raw, dict) else {}
             content, provider_reasoning = extract_content(raw, model.api)
             attempt.update(content=content, provider_reasoning=provider_reasoning)
-            decision, before = parse_content(content)
+            decision, before = parse_content(content, detailed=getattr(config, "detailed_annotation", False))
             warnings, evidence = decision_warnings(decision, record)
             base.update(status="ok", decision=decision, warnings=warnings, evidence_locations=evidence,
                         reasoning_before_json=before, response_id=raw.get("id"), usage=attempt["usage"], error="")
@@ -179,7 +179,8 @@ def load_run(directory):
     manifest = json.loads((directory / "manifest.json").read_text())
     public = manifest["configuration"]
     config = Config("", public["base_url"], [Model(**m) for m in public["models"]], public["prompt"], public["policy"],
-                    moderation_model=public.get("moderation_model", ""))
+                    moderation_model=public.get("moderation_model", ""),
+                    detailed_annotation=public.get("detailed_annotation", False))
     records = [json.loads(line) for line in (directory / "input_snapshot.jsonl").read_text().splitlines() if line]
     if digest(records) != manifest["input_hash"]:
         raise ValueError("Input snapshot was modified")

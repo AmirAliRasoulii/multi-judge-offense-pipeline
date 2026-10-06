@@ -9,7 +9,7 @@ import time
 from urllib import error, request
 from urllib.parse import urlsplit
 from .common import dumps
-from .schema import SCHEMA, InvalidResponse, system_prompt
+from .schema import SCHEMA, InvalidResponse, get_schema, system_prompt
 
 
 class APIError(Exception):
@@ -180,7 +180,8 @@ def build_payload(config, model, record, repair=False):
     if repair:
         user += "\nپاسخ قبلی کامل یا مطابق قالب نبود. دوباره فقط با قالب خروجی مقرر پاسخ بده. حتماً دقت کن مقادیر فیلدها دقیقاً عضوی از enumهای تعریف‌شده در اسکیما باشند."
     system = system_prompt(config, model)
-    schema_format = {"type": "json_schema", "json_schema": {"name": "offense_annotation", "strict": True, "schema": SCHEMA}}
+    schema = get_schema(getattr(config, "detailed_annotation", False))
+    schema_format = {"type": "json_schema", "json_schema": {"name": "offense_annotation", "strict": True, "schema": schema}}
     if model.api == "chat":
         payload = {"model": model.id, "messages": [{"role": "system", "content": system}, {"role": "user", "content": user}],
                    "stream": False, model.token_field: model.max_tokens}

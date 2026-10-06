@@ -34,11 +34,12 @@ class Config:
     proxy_url: str = ""
     bind_ip: str = ""
     extra_headers: dict = None
+    detailed_annotation: bool = False
 
     def public(self):
         return {"base_url": self.base_url, "models": [asdict(m) for m in self.models],
                 "prompt": self.prompt, "policy": self.policy, "moderation_model": self.moderation_model,
-                "network_mode": self.network_mode, "version": "0.1.0"}
+                "network_mode": self.network_mode, "detailed_annotation": self.detailed_annotation, "version": "0.1.0"}
 
 
 def env_values(path):
@@ -171,6 +172,8 @@ def load_config(path=".env", require_key=True):
     if not net_mode:
         net_mode = "direct" if (".ir" in base or "avalai" in base) else "system"
 
+    detailed_annotation = values.get("DETAILED_ANNOTATION", "false").strip().lower() in ("true", "1", "yes")
+
     cfg = Config(key, base, models, prompt, policy, int(values.get("MAX_WORKERS", 4)),
                  float(values.get("REQUEST_TIMEOUT", 120)), int(values.get("MAX_RETRIES", 2)),
                  float(values.get("REQUESTS_PER_MINUTE", 0)), int(values.get("MAX_API_CALLS", 0)),
@@ -178,7 +181,8 @@ def load_config(path=".env", require_key=True):
                  net_mode,
                  values.get("PROXY_URL", "").strip(),
                  values.get("BIND_IP", "").strip(),
-                 extra_headers)
+                 extra_headers,
+                 detailed_annotation)
     if cfg.workers < 1 or cfg.timeout <= 0 or cfg.retries < 0 or cfg.rpm < 0 or cfg.max_calls < 0:
         raise ValueError("Invalid execution limits")
     return cfg

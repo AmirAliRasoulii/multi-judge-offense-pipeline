@@ -240,6 +240,31 @@ class Decisions(unittest.TestCase):
         self.assertEqual(res_1_2["candidate_label"], 0)
         self.assertIn("minority_vote", res_1_2["review_flags"])
 
+    def test_compact_and_detailed_schema_validation(self):
+        from offense_judge.schema import COMPACT_SCHEMA, get_schema, validate, parse_content
+        compact_obj = {
+            "label": 0,
+            "p_offensive_raw": 0.05,
+            "abuse_types": [],
+            "discourse_tags": ["quotation"],
+            "profanity_present": True,
+            "needs_context": False,
+            "decision_reason": "نقل‌قول است."
+        }
+        validated = validate(compact_obj.copy(), detailed=False)
+        self.assertEqual(validated["label"], 0)
+        self.assertIn("target_types", validated)
+        self.assertEqual(validated["evidence"], [])
+
+        auto_val = validate(compact_obj.copy())
+        self.assertEqual(auto_val["label"], 0)
+
+        with self.assertRaises(InvalidResponse):
+            validate(compact_obj.copy(), detailed=True)
+
+        full_val = validate(self.d.copy(), detailed=True)
+        self.assertEqual(full_val["label"], 0)
+
     def test_atomic_jsonl_creates_nested_parent_dirs(self):
         from offense_judge.common import now
         nested = Path(tempfile.gettempdir()) / f"test_atomic_{now().replace(':', '')}" / "sub" / "data.jsonl"
@@ -438,6 +463,20 @@ class EndToEnd(unittest.TestCase):
         env.write_text(base_text + "\nNUM_JUDGES=1\n")
         with self.assertRaises(ValueError):
             load_config(env, require_key=False)
+
+    def test_detailed_annotation_config_setting(self):
+        root = Path(__file__).resolve().parent.parent
+        base_text = (root / ".env.example").read_text().replace("PROMPT_FILE=prompts/classifier.md", f"PROMPT_FILE={root / 'prompts/classifier.md'}").replace("REVIEW_POLICY_FILE=config/review_policy.json", f"REVIEW_POLICY_FILE={root / 'config/review_policy.json'}")
+        for i in range(1, 5):
+            base_text = base_text.replace(f"MODEL_{i}=\n", f"MODEL_{i}=model-{i}\n")
+        env = self.root / ".env_detailed"
+        env.write_text(base_text + "\nDETAILED_ANNOTATION=true\n")
+        cfg_true = load_config(env, require_key=False)
+        self.assertTrue(cfg_true.detailed_annotation)
+
+        env.write_text(base_text + "\nDETAILED_ANNOTATION=false\n")
+        cfg_false = load_config(env, require_key=False)
+        self.assertFalse(cfg_false.detailed_annotation)
 
     def test_moderation_tiebreak_e2e(self):
         cfg = demo_config()

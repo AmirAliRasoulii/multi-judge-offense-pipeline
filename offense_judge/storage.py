@@ -55,8 +55,9 @@ class Store:
         self.db.close()
 
     def init_run(self, records, config):
-        from .schema import SCHEMA
-        spec = {"configuration": config.public(), "input_hash": digest(records), "schema": SCHEMA}
+        from .schema import get_schema
+        schema = get_schema(getattr(config, "detailed_annotation", False))
+        spec = {"configuration": config.public(), "input_hash": digest(records), "schema": schema}
         fingerprint = digest(spec)
         path = self.directory / "manifest.json"
         if path.exists():

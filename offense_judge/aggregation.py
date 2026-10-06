@@ -4,8 +4,9 @@ from .common import digest
 
 def cache_key(config, model, record):
     from dataclasses import asdict
-    from .schema import SCHEMA
-    return digest({"base_url": config.base_url, "model": asdict(model), "prompt": config.prompt, "schema": SCHEMA,
+    from .schema import get_schema
+    schema = get_schema(getattr(config, "detailed_annotation", False))
+    return digest({"base_url": config.base_url, "model": asdict(model), "prompt": config.prompt, "schema": schema,
                    "text": record["text"], "context": record["context"], "language": record["language"], "version": "0.1.0"})
 
 
