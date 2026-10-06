@@ -5,16 +5,16 @@ import unittest
 from pathlib import Path
 from unittest.mock import patch
 from openpyxl import load_workbook
-from avalai_offense.aggregation import aggregate, cache_key, quote_hint
-from avalai_offense.common import atomic_jsonl, dumps
-from avalai_offense.config import load_config
-from avalai_offense.demo import DemoProvider, demo_config, fixture_decision, run_demo
-from avalai_offense.export import MAIN_COLUMNS, import_reviews
-from avalai_offense.inputs import read_records
-from avalai_offense.pipeline import run_pipeline
-from avalai_offense.provider import APIError, BudgetExceeded, Gate, build_payload, extract_content
-from avalai_offense.schema import InvalidResponse, decision_warnings, parse_content, validate
-from avalai_offense.storage import Store
+from offense_judge.aggregation import aggregate, cache_key, quote_hint
+from offense_judge.common import atomic_jsonl, dumps
+from offense_judge.config import load_config
+from offense_judge.demo import DemoProvider, demo_config, fixture_decision, run_demo
+from offense_judge.export import MAIN_COLUMNS, import_reviews
+from offense_judge.inputs import read_records
+from offense_judge.pipeline import run_pipeline
+from offense_judge.provider import APIError, BudgetExceeded, Gate, build_payload, extract_content
+from offense_judge.schema import InvalidResponse, decision_warnings, parse_content, validate
+from offense_judge.storage import Store
 
 
 def record(case="criticism", text="متن آزمایش", ident="x"):
@@ -201,7 +201,7 @@ class Decisions(unittest.TestCase):
         self.assertIn("tie_2_2_moderation_resolved", res_neg["review_flags"])
 
     def test_atomic_jsonl_creates_nested_parent_dirs(self):
-        from avalai_offense.common import now
+        from offense_judge.common import now
         nested = Path(tempfile.gettempdir()) / f"test_atomic_{now().replace(':', '')}" / "sub" / "data.jsonl"
         try:
             atomic_jsonl(nested, [{"test": 123}])
@@ -241,7 +241,7 @@ class EndToEnd(unittest.TestCase):
         cfg = demo_config()
         provider = DemoProvider()
         provider.gate = Gate(max_calls=2)
-        with patch("avalai_offense.pipeline.time.sleep"):
+        with patch("offense_judge.pipeline.time.sleep"):
             summary, stopped = run_pipeline([record()], cfg, self.root / "run", provider, progress=lambda _: None)
         self.assertIsNotNone(stopped)
         self.assertEqual(summary["final_label_counts"], {"None": 1})
@@ -258,7 +258,7 @@ class EndToEnd(unittest.TestCase):
                 if not repair:
                     raw["choices"][0]["message"]["content"] = "{invalid}"
                 return raw
-        with patch("avalai_offense.pipeline.time.sleep"):
+        with patch("offense_judge.pipeline.time.sleep"):
             summary, _ = run_pipeline([record()], demo_config(), self.root / "run", BadOnce(), progress=lambda _: None)
         self.assertEqual(summary["api_attempts"], 8)
         attempts = [json.loads(line) for line in (self.root / "run/raw_responses.jsonl").read_text().splitlines()]

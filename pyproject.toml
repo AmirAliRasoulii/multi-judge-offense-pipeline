@@ -3,14 +3,15 @@ requires = ["setuptools>=68"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "avalai-offense-pipeline"
+name = "multi-judge-offense-pipeline"
 version = "0.1.0"
 requires-python = ">=3.10"
 dependencies = ["openpyxl>=3.1,<4"]
-description = "Four independent AvalAI judges, resumable annotation and review exports"
+description = "Multi-judge LLM pipeline for offensive content classification, consensus aggregation, and HITL review"
 
 [project.scripts]
-avalai-offense = "avalai_offense.cli:main"
+offense-judge = "offense_judge.cli:main"
+avalai-offense = "offense_judge.cli:main"
 
 [tool.setuptools.packages.find]
-include = ["avalai_offense*"]
+include = ["offense_judge*"]

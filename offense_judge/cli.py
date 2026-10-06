@@ -8,7 +8,7 @@ from .inputs import read_records
 
 
 def main(argv=None):
-    parser = argparse.ArgumentParser(description="Four independent AvalAI offense judges (Persian / English)")
+    parser = argparse.ArgumentParser(description="Multi-judge LLM pipeline for offensive content classification (Persian / English)")
     sub = parser.add_subparsers(dest="command", required=True)
     for command in ("run", "dry-run"):
         p = sub.add_parser(command)
@@ -53,16 +53,37 @@ def main(argv=None):
             from .provider import fetch_json, make_opener
             values = env_values(args.env)
             key, base = connection(values)
-            opener = make_opener(values.get("NETWORK_MODE", "direct").strip().lower(),
+            net_mode = values.get("NETWORK_MODE", "").strip().lower()
+            if not net_mode:
+                net_mode = "direct" if (".ir" in base or "avalai" in base) else "system"
+            opener = make_opener(net_mode,
                                  values.get("PROXY_URL", "").strip(),
                                  values.get("BIND_IP", "").strip())
-            if args.public or not key:
-                data = fetch_json("https://api.avalai.ir/public/models", opener=opener)
-            else:
-                data = fetch_json(base + "/models", key, opener=opener)
+            extra_headers = {}
+            if values.get("EXTRA_HEADERS", "").strip():
+                try:
+                    extra_headers = json.loads(values["EXTRA_HEADERS"])
+                except Exception:
+                    pass
+            if "openrouter.ai" in base:
+                extra_headers.setdefault("HTTP-Referer", "https://github.com/AmirAliRasoulii/multi-judge-offense-pipeline")
+                extra_headers.setdefault("X-Title", "Multi-Judge Offense Pipeline")
+
+            try:
+                if (args.public or not key) and "avalai" in base:
+                    data = fetch_json("https://api.avalai.ir/public/models", opener=opener, extra_headers=extra_headers)
+                else:
+                    data = fetch_json(base + "/models", key, opener=opener, extra_headers=extra_headers)
+            except Exception as e:
+                if "avalai" in base:
+                    data = fetch_json("https://api.avalai.ir/public/models", opener=opener, extra_headers=extra_headers)
+                else:
+                    raise e
             models = data.get("data", []) if isinstance(data, dict) else data
             for m in models:
-                print(m.get("id", ""), m.get("owned_by", ""), sep="\t")
+                mid = m.get("id", "")
+                owned = m.get("owned_by", "") or ""
+                print(mid, owned, sep="\t")
         elif args.command == "export":
             from .pipeline import export_existing
             print(dumps(export_existing(args.run_dir), indent=2))

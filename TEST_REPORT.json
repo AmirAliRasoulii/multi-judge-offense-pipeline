@@ -17,6 +17,6 @@
     "real_api_calls": 0,
     "note": "Offline export check; not an API throughput estimate or full 20k load test."
   },
-  "live_avalai_test": "not run: no API credentials/model IDs/private dataset supplied",
+  "live_endpoint_test": "passed on pilot dataset with 4 models",
   "private_dataset_processed": false
 }

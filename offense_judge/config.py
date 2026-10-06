@@ -30,9 +30,10 @@ class Config:
     rpm: float = 0
     max_calls: int = 0
     moderation_model: str = "omni-moderation-latest"
-    network_mode: str = "direct"
+    network_mode: str = "system"
     proxy_url: str = ""
     bind_ip: str = ""
+    extra_headers: dict = None
 
     def public(self):
         return {"base_url": self.base_url, "models": [asdict(m) for m in self.models],
@@ -62,18 +63,48 @@ def env_values(path):
 
 
 def connection(values):
-    url = values.get("AVALAI_BASE_URL", "https://api.avalai.ir/v1").rstrip("/")
-    parsed = urlsplit(url)
-    if parsed.scheme != "https" or not parsed.netloc or parsed.username or parsed.password or parsed.query or parsed.fragment:
-        raise ValueError("AVALAI_BASE_URL must be an HTTPS URL without credentials/query")
-    return values.get("AVALAI_API_KEY", ""), url
+    # Primary and fallback API keys
+    key = (
+        values.get("LLM_API_KEY")
+        or values.get("OPENROUTER_API_KEY")
+        or values.get("OPENAI_API_KEY")
+        or values.get("AVALAI_API_KEY")
+        or values.get("API_KEY")
+        or ""
+    ).strip()
+
+    # Primary and fallback Base URLs
+    base_url = (
+        values.get("LLM_BASE_URL")
+        or values.get("OPENROUTER_BASE_URL")
+        or values.get("OPENAI_BASE_URL")
+        or values.get("AVALAI_BASE_URL")
+        or values.get("BASE_URL")
+        or ""
+    ).strip()
+
+    if not base_url:
+        if values.get("OPENROUTER_API_KEY"):
+            base_url = "https://openrouter.ai/api/v1"
+        elif values.get("OPENAI_API_KEY"):
+            base_url = "https://api.openai.com/v1"
+        elif values.get("AVALAI_API_KEY"):
+            base_url = "https://api.avalai.ir/v1"
+        else:
+            base_url = "https://openrouter.ai/api/v1"
+
+    base_url = base_url.rstrip("/")
+    parsed = urlsplit(base_url)
+    if parsed.scheme not in ("http", "https") or not parsed.netloc or parsed.username or parsed.password or parsed.query or parsed.fragment:
+        raise ValueError("LLM_BASE_URL must be a valid HTTP or HTTPS URL without credentials/query")
+    return key, base_url
 
 
 def load_config(path=".env", require_key=True):
     values = env_values(path)
     key, base = connection(values)
     if require_key and not key:
-        raise ValueError("Set AVALAI_API_KEY in .env")
+        raise ValueError("Set LLM_API_KEY (or OPENROUTER_API_KEY / OPENAI_API_KEY / AVALAI_API_KEY) in .env")
     root = Path(path).resolve().parent
     prompt = (root / values.get("PROMPT_FILE", "prompts/classifier.md")).read_text(encoding="utf-8")
     if not prompt.strip():
@@ -108,13 +139,32 @@ def load_config(path=".env", require_key=True):
         models.append(m)
     if len({m.id for m in models}) != 4:
         raise ValueError("Four distinct model IDs are required")
+
+    extra_headers = {}
+    if values.get("EXTRA_HEADERS", "").strip():
+        try:
+            extra_headers = json.loads(values["EXTRA_HEADERS"])
+        except Exception as e:
+            raise ValueError(f"Invalid EXTRA_HEADERS JSON: {e}")
+    if "openrouter.ai" in base:
+        if "HTTP-Referer" not in extra_headers:
+            extra_headers["HTTP-Referer"] = "https://github.com/AmirAliRasoulii/multi-judge-offense-pipeline"
+        if "X-Title" not in extra_headers:
+            extra_headers["X-Title"] = "Multi-Judge Offense Pipeline"
+
+    # Default network mode: "direct" if domestic .ir / avalai, otherwise "system"
+    net_mode = values.get("NETWORK_MODE", "").strip().lower()
+    if not net_mode:
+        net_mode = "direct" if (".ir" in base or "avalai" in base) else "system"
+
     cfg = Config(key, base, models, prompt, policy, int(values.get("MAX_WORKERS", 4)),
                  float(values.get("REQUEST_TIMEOUT", 120)), int(values.get("MAX_RETRIES", 2)),
                  float(values.get("REQUESTS_PER_MINUTE", 0)), int(values.get("MAX_API_CALLS", 0)),
                  values.get("MODERATION_MODEL", "omni-moderation-latest").strip(),
-                 values.get("NETWORK_MODE", "direct").strip().lower(),
+                 net_mode,
                  values.get("PROXY_URL", "").strip(),
-                 values.get("BIND_IP", "").strip())
+                 values.get("BIND_IP", "").strip(),
+                 extra_headers)
     if cfg.workers < 1 or cfg.timeout <= 0 or cfg.retries < 0 or cfg.rpm < 0 or cfg.max_calls < 0:
         raise ValueError("Invalid execution limits")
     return cfg

@@ -5,7 +5,7 @@ from pathlib import Path
 from .aggregation import aggregate, cache_key
 from .common import digest, now
 from .config import Config, Model
-from .provider import APIError, AvalAI, BudgetExceeded, extract_content
+from .provider import APIError, AvalAI, BudgetExceeded, LLMProvider, extract_content
 from .schema import InvalidResponse, decision_warnings, parse_content
 from .storage import RunLock, Store
 
@@ -106,7 +106,7 @@ def run_pipeline(records, config, output, provider=None, retry_failed=False, pro
         store = Store(output)
         try:
             manifest = store.init_run(records, config)
-            provider = provider or AvalAI(config)
+            provider = provider or LLMProvider(config)
             stopped = None
             with ThreadPoolExecutor(max_workers=config.workers) as pool:
                 for index, record in enumerate(records, 1):
@@ -131,9 +131,13 @@ def run_pipeline(records, config, output, provider=None, retry_failed=False, pro
                         if pos == 2 and neg == 2 and getattr(config, "moderation_model", ""):
                             try:
                                 judge_moderation(store, config, provider, record)
-                            except (BudgetExceeded, APIError) as e:
+                            except BudgetExceeded as e:
                                 stopped = str(e)
                                 break
+                            except APIError as e:
+                                if e.status in (401, 403):
+                                    stopped = str(e)
+                                    break
                     if index == 1 or index % 10 == 0 or index == len(records):
                         progress(f"Annotated {index}/{len(records)} records; completed votes are checkpointed.")
             # Pool drained: successful in-flight votes are saved before exporting.

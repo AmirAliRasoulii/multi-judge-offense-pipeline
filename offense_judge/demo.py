@@ -76,7 +76,7 @@ class DemoProvider:
 
 
 def demo_config():
-    cfg = Config("", "https://api.avalai.ir/v1", [Model(i, f"DEMO-NOT-A-REAL-MODEL-{i}", extra={}) for i in range(1, 5)],
+    cfg = Config("", "https://openrouter.ai/api/v1", [Model(i, f"DEMO-NOT-A-REAL-MODEL-{i}", extra={}) for i in range(1, 5)],
                  (ROOT / "prompts/classifier.md").read_text(), json.loads((ROOT / "config/review_policy.json").read_text()),
                  moderation_model="")
     cfg.policy["audit_unanimous_rate"] = 0

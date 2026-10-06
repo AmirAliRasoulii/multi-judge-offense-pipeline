@@ -146,10 +146,12 @@ def make_opener(network_mode="direct", proxy_url="", bind_ip=""):
     return request.build_opener(*handlers)
 
 
-def fetch_json(url, key="", payload=None, timeout=120, opener=None):
+def fetch_json(url, key="", payload=None, timeout=120, opener=None, extra_headers=None):
     headers = {"Accept": "application/json", "Content-Type": "application/json"}
     if key:
         headers["Authorization"] = "Bearer " + key
+    if extra_headers:
+        headers.update(extra_headers)
     req = request.Request(url, data=dumps(payload).encode() if payload is not None else None, headers=headers)
     if opener is None:
         opener = make_opener()
@@ -255,23 +257,30 @@ def extract_moderation(raw):
     }
 
 
-class AvalAI:
+class LLMProvider:
     def __init__(self, config):
         self.config = config
         self.gate = Gate(config.rpm, config.max_calls)
         self.opener = make_opener(
-            getattr(config, "network_mode", "direct"),
+            getattr(config, "network_mode", "system"),
             getattr(config, "proxy_url", ""),
             getattr(config, "bind_ip", ""),
         )
+        self.extra_headers = getattr(config, "extra_headers", None) or {}
 
     def call(self, model, record, repair=False):
         self.gate.acquire()
         endpoint = "/chat/completions" if model.api == "chat" else "/responses"
         return fetch_json(self.config.base_url + endpoint, self.config.key,
-                          build_payload(self.config, model, record, repair), self.config.timeout, opener=self.opener)
+                          build_payload(self.config, model, record, repair), self.config.timeout,
+                          opener=self.opener, extra_headers=self.extra_headers)
 
     def call_moderation(self, text, model="omni-moderation-latest"):
         self.gate.acquire()
         payload = {"input": text, "model": model or "omni-moderation-latest"}
-        return fetch_json(self.config.base_url + "/moderations", self.config.key, payload, self.config.timeout, opener=self.opener)
+        return fetch_json(self.config.base_url + "/moderations", self.config.key, payload,
+                          self.config.timeout, opener=self.opener, extra_headers=self.extra_headers)
+
+
+# Backward compatibility alias
+AvalAI = LLMProvider
