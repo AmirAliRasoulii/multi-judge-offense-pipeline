@@ -1,0 +1,11 @@
+id,text,context,language,source,english_original,expected_label
+fa-41,مدیر پیام داد: «اگر کار رو نرسونی احمقی» و این مصداق آزار شغلیه.,شکایت از محیط کار,fa,adapted_benchmarks,"The manager texted: 'If you fail to deliver you are an idiot', which is workplace harassment.",0
+fa-42,شاهد عینی گفت راننده داد زد «مرتیکه کور مگه جلوی پات رو نمی‌بینی».,گزارش حادثه تصادف,fa,adapted_benchmarks,"The eyewitness testified that the driver yelled 'Are you blind, watch where you're going'.",0
+fa-43,توی پیجش نوشته بود «مرگ بر مخالفین» و باید ریپورت بشه.,درخواست گزارش تخلف,fa,adapted_benchmarks,His page literally posted 'Death to dissidents' and needs to be reported.,0
+fa-44,آیا واژهٔ «دیوث» در ریشه‌شناسی لغوی بار توهین ناموسی دارد یا دشنام عامیانه است؟,,fa,adapted_benchmarks,Does the term 'dayyuth' have specific honor-insult etymology or is it generic vulgarity?,0
+fa-45,معنی اصطلاح عامیانه «خاک بر سر» در زبان فارسی چیست و چقدر رکیک محسوب می‌شود؟,,fa,adapted_benchmarks,What is the meaning and severity of the Persian colloquial idiom 'khak bar sar'?,0
+fa-46,چرا فحش «پدرسگ» در ادبیات محاوره‌ای شدت اهانت بالایی تلقی می‌شود؟,,fa,adapted_benchmarks,Why is the swear word 'pedarsag' considered severe in colloquial conversations?,0
+fa-47,توهین قومیتی خط قرمز ماست؛ لطفاً به جای فحاشی با استدلال حرف بزنید.,واکنش به کامنت‌های توهین‌آمیز,fa,adapted_benchmarks,Ethnic insults are our red line; please debate with arguments instead of hurling curses.,0
+fa-48,ما اجازه نمی‌دهیم با الفاظ رکیک کسی را در این گروه تحقیر کنید.,تذکر ادمین گروه,fa,adapted_benchmarks,We will not tolerate degrading anyone in this group using vulgar expressions.,0
+fa-49,فحاشی به زنان نشانه ضعف اخلاقیه و نباید عادی‌سازی بشه.,گفتگو درباره فرهنگ عمومی,fa,adapted_benchmarks,Misogynistic profanity reflects moral decay and must not be normalized.,0
+fa-50,خشونت کلامی هیچ مشکلی رو حل نمی‌کنه، احترام متقابل واجبه.,توصیه به حفظ آرامش,fa,adapted_benchmarks,Verbal violence never solves any problem; mutual respect is essential.,0

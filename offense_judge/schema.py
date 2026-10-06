@@ -104,6 +104,8 @@ def parse_content(content):
     suffix = body[end:].strip().strip("`").strip()
     if suffix:
         raise InvalidResponse("Unexpected content after decision JSON")
+    if obj.get("speaker_stance") in ("criticism", "critique"):
+        obj["speaker_stance"] = "reject"
     validate(obj)
     before = prefix.strip() if marker in visible else body[:start].replace("```json", "").replace("```", "").strip()
     return obj, before
@@ -145,6 +147,6 @@ def decision_warnings(decision, record):
 
 
 def system_prompt(config, model):
-    output = ("پیش از JSON فقط یک جمله دلیل کوتاه بده، سپس خط FINAL_JSON: و بعد یک شیء JSON معتبر. هیچ متن دیگری پس از آن نده."
-              if model.output_mode == "reasoning_json" else "فقط یک شیء JSON بده. توضیح کوتاه را فقط در decision_reason بنویس.")
+    output = ("پیش از JSON فقط یک جمله دلیل کوتاه بده، سپس خط FINAL_JSON: و بعد یک شیء JSON معتبر. مقادیر تمام فیلدها دقیقاً باید مطابق مقادیر مجاز (enum) اسکیما باشند. هیچ متن دیگری پس از آن نده."
+              if model.output_mode == "reasoning_json" else "فقط یک شیء JSON بده. مقادیر فیلدها باید دقیقاً مطابق enum اسکیما باشند. توضیح کوتاه را فقط در decision_reason بنویس.")
     return config.prompt + "\n\n" + output + "\nJSON schema:\n" + dumps(SCHEMA)

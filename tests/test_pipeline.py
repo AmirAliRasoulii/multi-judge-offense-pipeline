@@ -200,6 +200,46 @@ class Decisions(unittest.TestCase):
         self.assertEqual(res_neg["label_origin"], "moderation_tiebreak")
         self.assertIn("tie_2_2_moderation_resolved", res_neg["review_flags"])
 
+    def test_two_judge_aggregation_and_1_1_moderation_resolution(self):
+        policy_2 = {**self.cfg.policy, "num_judges": 2}
+        v_unanimous = votes([1, 1])
+        res_unanimous = aggregate(self.r, v_unanimous, policy_2, "run", expected_judges=2)
+        self.assertEqual(res_unanimous["candidate_label"], 1)
+        self.assertEqual(res_unanimous["final_label"], 1)
+
+        v_tie = votes([1, 0])
+        res_tie = aggregate(self.r, v_tie, policy_2, "run", expected_judges=2)
+        self.assertIsNone(res_tie["candidate_label"])
+        self.assertEqual(res_tie["status"], "tie")
+
+        mod_pos = {"status": "ok", "decision": {"flagged": True, "label": 1, "flagged_categories": ["harassment"]}}
+        res_pos = aggregate(self.r, v_tie, policy_2, "run", moderation=mod_pos, expected_judges=2)
+        self.assertEqual(res_pos["candidate_label"], 1)
+        self.assertEqual(res_pos["final_label"], 1)
+        self.assertEqual(res_pos["label_origin"], "moderation_tiebreak")
+        self.assertIn("tie_1_1_moderation_resolved", res_pos["review_flags"])
+
+        mod_neg = {"status": "ok", "decision": {"flagged": False, "label": 0, "flagged_categories": []}}
+        res_neg = aggregate(self.r, v_tie, policy_2, "run", moderation=mod_neg, expected_judges=2)
+        self.assertEqual(res_neg["candidate_label"], 0)
+        self.assertEqual(res_neg["final_label"], 0)
+        self.assertEqual(res_neg["label_origin"], "moderation_tiebreak")
+        self.assertIn("tie_1_1_moderation_resolved", res_neg["review_flags"])
+
+    def test_three_judge_aggregation(self):
+        policy_3 = {**self.cfg.policy, "num_judges": 3}
+        res_3_0 = aggregate(self.r, votes([1, 1, 1]), policy_3, "run", expected_judges=3)
+        self.assertEqual(res_3_0["candidate_label"], 1)
+        self.assertNotIn("minority_vote", res_3_0["review_flags"])
+
+        res_2_1 = aggregate(self.r, votes([1, 1, 0]), policy_3, "run", expected_judges=3)
+        self.assertEqual(res_2_1["candidate_label"], 1)
+        self.assertIn("minority_vote", res_2_1["review_flags"])
+
+        res_1_2 = aggregate(self.r, votes([1, 0, 0]), policy_3, "run", expected_judges=3)
+        self.assertEqual(res_1_2["candidate_label"], 0)
+        self.assertIn("minority_vote", res_1_2["review_flags"])
+
     def test_atomic_jsonl_creates_nested_parent_dirs(self):
         from offense_judge.common import now
         nested = Path(tempfile.gettempdir()) / f"test_atomic_{now().replace(':', '')}" / "sub" / "data.jsonl"
@@ -369,6 +409,36 @@ class EndToEnd(unittest.TestCase):
         with self.assertRaises(ValueError):
             load_config(env, require_key=False)
 
+    def test_num_judges_env_setting(self):
+        root = Path(__file__).resolve().parent.parent
+        base_text = (root / ".env.example").read_text().replace("PROMPT_FILE=prompts/classifier.md", f"PROMPT_FILE={root / 'prompts/classifier.md'}").replace("REVIEW_POLICY_FILE=config/review_policy.json", f"REVIEW_POLICY_FILE={root / 'config/review_policy.json'}")
+        for i in range(1, 5):
+            base_text = base_text.replace(f"MODEL_{i}=\n", f"MODEL_{i}=model-{i}\n")
+        env = self.root / ".env_num_judges"
+        
+        # Test 2 judges
+        env.write_text(base_text + "\nNUM_JUDGES=2\n")
+        cfg2 = load_config(env, require_key=False)
+        self.assertEqual(len(cfg2.models), 2)
+        self.assertEqual([m.id for m in cfg2.models], ["model-1", "model-2"])
+        self.assertEqual(cfg2.policy.get("num_judges"), 2)
+
+        # Test 3 judges
+        env.write_text(base_text + "\nNUM_JUDGES=3\n")
+        cfg3 = load_config(env, require_key=False)
+        self.assertEqual(len(cfg3.models), 3)
+        self.assertEqual([m.id for m in cfg3.models], ["model-1", "model-2", "model-3"])
+        self.assertEqual(cfg3.policy.get("num_judges"), 3)
+
+        # Test invalid judges
+        env.write_text(base_text + "\nNUM_JUDGES=5\n")
+        with self.assertRaises(ValueError):
+            load_config(env, require_key=False)
+
+        env.write_text(base_text + "\nNUM_JUDGES=1\n")
+        with self.assertRaises(ValueError):
+            load_config(env, require_key=False)
+
     def test_moderation_tiebreak_e2e(self):
         cfg = demo_config()
         cfg.moderation_model = "omni-moderation-latest"
@@ -392,6 +462,32 @@ class EndToEnd(unittest.TestCase):
         self.assertIn("moderation_flagged", headers)
         self.assertIn("moderation_categories", headers)
         wb.close()
+
+    def test_two_judge_moderation_tiebreak_e2e(self):
+        cfg = demo_config()
+        cfg.models = cfg.models[:2]
+        cfg.policy["num_judges"] = 2
+        cfg.moderation_model = "omni-moderation-latest"
+
+        class TwoJudgeTieProvider(DemoProvider):
+            def call(self, model, record, repair=False):
+                raw = super().call(model, record, repair)
+                slot = 1 if model.slot == 1 else 3
+                d = fixture_decision(record, slot)
+                raw["choices"][0]["message"]["content"] = dumps(d)
+                return raw
+
+        r = record(ident="tie2", case="tie", text="چه نابغه‌ای! باز هم همه‌چیز را خراب کردی.")
+        output = self.root / "tie2_run"
+        summary, stopped = run_pipeline([r], cfg, output, TwoJudgeTieProvider(), progress=lambda _: None)
+        self.assertIsNone(stopped)
+        results = [json.loads(line) for line in (output / "results.jsonl").read_text().splitlines()]
+        self.assertEqual(len(results), 1)
+        res = results[0]
+        self.assertEqual(res["candidate_label"], 1)
+        self.assertEqual(res["final_label"], 1)
+        self.assertEqual(res["label_origin"], "moderation_tiebreak")
+        self.assertIn("tie_1_1_moderation_resolved", res["review_flags"])
 
 
 if __name__ == "__main__":

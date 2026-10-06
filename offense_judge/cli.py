@@ -41,7 +41,7 @@ def main(argv=None):
                                    args.language_column, args.source_column, args.limit)
             if args.command == "dry-run":
                 print(dumps({"records": len(records), "unique_requests_per_model": len({r["content_hash"] for r in records}),
-                             "maximum_first_pass_calls": 4 * len({r["content_hash"] for r in records}),
+                             "maximum_first_pass_calls": len(cfg.models) * len({r["content_hash"] for r in records}),
                              "models": [m.id for m in cfg.models], "network_calls": 0}, indent=2))
             else:
                 from .pipeline import run_pipeline

@@ -120,11 +120,25 @@ def load_config(path=".env", require_key=True):
     tags = policy.get("sensitive_discourse_tags")
     if not isinstance(tags, list) or any(t not in ENUMS["discourse_tags"] for t in tags):
         raise ValueError("Invalid sensitive_discourse_tags")
+    # Configurable number of judges (2, 3, or 4)
+    num_judges_str = values.get("NUM_JUDGES", "").strip()
+    if num_judges_str:
+        try:
+            target_judges = int(num_judges_str)
+            if target_judges not in (2, 3, 4):
+                raise ValueError("NUM_JUDGES must be 2, 3, or 4")
+        except ValueError as e:
+            raise ValueError(f"Invalid NUM_JUDGES '{num_judges_str}': must be 2, 3, or 4") from e
+    else:
+        defined = [s for s in range(1, 5) if values.get(f"MODEL_{s}", "").strip()]
+        target_judges = len(defined) if len(defined) in (2, 3) else 4
+    policy["num_judges"] = target_judges
+
     models = []
     forbidden = {"model", "messages", "input", "instructions", "stream", "response_format", "text",
                  "max_tokens", "max_completion_tokens", "max_output_tokens", "reasoning", "reasoning_effort",
                  "api_key", "authorization", "headers"}
-    for slot in range(1, 5):
+    for slot in range(1, target_judges + 1):
         prefix = f"MODEL_{slot}"
         m = Model(slot, values.get(prefix, "").strip(), values.get(prefix + "_API", "chat"),
                   values.get(prefix + "_OUTPUT_MODE", "reasoning_json"), int(values.get(prefix + "_MAX_TOKENS", 4096)),
@@ -137,8 +151,8 @@ def load_config(path=".env", require_key=True):
         if not isinstance(m.extra, dict) or forbidden.intersection(k.lower() for k in m.extra):
             raise ValueError(f"Protected or invalid EXTRA_JSON for {prefix}")
         models.append(m)
-    if len({m.id for m in models}) != 4:
-        raise ValueError("Four distinct model IDs are required")
+    if len({m.id for m in models}) != target_judges:
+        raise ValueError(f"{target_judges} distinct model IDs are required")
 
     extra_headers = {}
     if values.get("EXTRA_HEADERS", "").strip():

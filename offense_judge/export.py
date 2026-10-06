@@ -81,12 +81,18 @@ def export_run(store, results, manifest):
         for key in ("prompt_tokens", "completion_tokens", "input_tokens", "output_tokens", "total_tokens"):
             if type(u.get(key)) is int:
                 usage[key] += u[key]
+        p_details = u.get("prompt_tokens_details") or {}
+        if type(p_details.get("cached_tokens")) is int:
+            usage["cached_prompt_tokens"] += p_details["cached_tokens"]
+        c_details = u.get("completion_tokens_details") or {}
+        if type(c_details.get("reasoning_tokens")) is int:
+            usage["reasoning_tokens"] += c_details["reasoning_tokens"]
     summary = {"run_id": manifest["run_id"], "records": len(results), "status_counts": dict(Counter(r["status"] for r in results)),
                "candidate_label_counts": dict(Counter(str(r["candidate_label"]) for r in results)),
                "final_label_counts": dict(Counter(str(r["final_label"]) for r in results)),
                "review_records": sum(r["needs_review"] for r in results),
                "blocking_records": sum(r["blocking_review"] for r in results),
-               "moderation_tiebreak_records": sum("tie_2_2_moderation_resolved" in r.get("review_flags", []) for r in results),
+               "moderation_tiebreak_records": sum(any(f.startswith("tie_") and f.endswith("_moderation_resolved") for f in r.get("review_flags", [])) for r in results),
                "duplicate_records": sum(bool(r["duplicate_of"]) for r in results),
                "api_attempts": attempts_count, "usage_totals_as_reported": dict(usage),
                "estimated_cost": None, "note": "Raw scores are not calibrated. Token sums include retries; duplicate records reuse requests. No pricing assumed."}

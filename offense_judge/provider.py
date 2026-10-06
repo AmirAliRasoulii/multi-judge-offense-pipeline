@@ -178,7 +178,7 @@ def fetch_json(url, key="", payload=None, timeout=120, opener=None, extra_header
 def build_payload(config, model, record, repair=False):
     user = dumps({"text": record["text"], "context": record["context"], "language": record["language"]})
     if repair:
-        user += "\nپاسخ قبلی کامل یا مطابق قالب نبود. دوباره فقط با قالب خروجی مقرر پاسخ بده."
+        user += "\nپاسخ قبلی کامل یا مطابق قالب نبود. دوباره فقط با قالب خروجی مقرر پاسخ بده. حتماً دقت کن مقادیر فیلدها دقیقاً عضوی از enumهای تعریف‌شده در اسکیما باشند."
     system = system_prompt(config, model)
     schema_format = {"type": "json_schema", "json_schema": {"name": "offense_annotation", "strict": True, "schema": SCHEMA}}
     if model.api == "chat":

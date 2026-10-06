@@ -123,12 +123,13 @@ def run_pipeline(records, config, output, provider=None, retry_failed=False, pro
                                 pending.cancel()
                     if stopped:
                         break
-                    # If 4 judges completed and resulted in a 2-2 tie, query moderation model
+                    # If all judges completed and resulted in an even tie (e.g. 1-1 or 2-2), query moderation model
                     ok_decisions = [v.get("decision") for v in record_votes if v.get("status") == "ok" and v.get("decision")]
-                    if len(ok_decisions) == 4 and all(d.get("label") is not None for d in ok_decisions):
+                    n_models = len(config.models)
+                    if len(ok_decisions) == n_models and all(d.get("label") is not None for d in ok_decisions):
                         pos = sum(d["label"] == 1 for d in ok_decisions)
                         neg = sum(d["label"] == 0 for d in ok_decisions)
-                        if pos == 2 and neg == 2 and getattr(config, "moderation_model", ""):
+                        if pos == neg and pos > 0 and getattr(config, "moderation_model", ""):
                             try:
                                 judge_moderation(store, config, provider, record)
                             except BudgetExceeded as e:
@@ -166,7 +167,7 @@ def collect_results(store, config, records, manifest):
         if mod_model:
             mod_key = moderation_cache_key(config, record)
             mod_vote = store.get_vote(mod_key)
-        result = aggregate(record, votes, config.policy, manifest["run_id"], reviews.get(record["id"]), moderation=mod_vote)
+        result = aggregate(record, votes, config.policy, manifest["run_id"], reviews.get(record["id"]), moderation=mod_vote, expected_judges=len(config.models))
         first = duplicate_seen.setdefault(record["content_hash"], record["id"])
         result["duplicate_of"] = first if first != record["id"] else ""
         results.append(result)

@@ -36,6 +36,8 @@ def read_records(path, text_column="text", id_column="id", context_column="conte
     for n, row in enumerate(rows[:limit], 1):
         if not isinstance(row, dict) or not isinstance(row.get(text_column), str) or not row[text_column].strip():
             raise ValueError(f"Row {n}: nonempty string column '{text_column}' required")
+        if None in row:
+            raise ValueError(f"Row {n}: extra column values detected ({len(row[None])}); verify CSV quoting")
         text = row[text_column]
         context, language, source = (row.get(c) or "" for c in (context_column, language_column, source_column))
         if not all(isinstance(v, str) for v in (context, language, source)):

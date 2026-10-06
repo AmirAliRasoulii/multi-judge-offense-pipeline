@@ -14,27 +14,41 @@ def quote_hint(text):
     return bool(re.search(r'«[^»]+»|“[^”]+”|"[^"\n]+"', text))
 
 
-def aggregate(record, votes, policy, run_id, review=None, moderation=None):
+def aggregate(record, votes, policy, run_id, review=None, moderation=None, expected_judges=None):
+    expected = expected_judges or policy.get("num_judges", 4)
     decisions = [v.get("decision") for v in votes if v["status"] == "ok"]
-    valid = len(votes) == 4 and len(decisions) == 4 and all(d["label"] is not None for d in decisions)
+    n_votes = len(votes)
+    valid = n_votes == expected and len(decisions) == expected and all(d["label"] is not None for d in decisions)
     positives = sum(d["label"] == 1 for d in decisions)
     negatives = sum(d["label"] == 0 for d in decisions)
-    candidate = (1 if positives >= 3 else 0 if negatives >= 3 else None) if valid else None
-    flags, blocking = set(), set()
-    errors = len(votes) != 4 or any(v["status"] != "ok" for v in votes)
 
-    is_tie = valid and positives == 2 and negatives == 2
+    # Determine candidate label based on number of judges:
+    if not valid:
+        candidate = None
+    elif expected == 2:
+        candidate = 1 if positives == 2 else 0 if negatives == 2 else None
+    elif expected == 3:
+        candidate = 1 if positives >= 2 else 0 if negatives >= 2 else None
+    else:  # expected >= 4
+        candidate = 1 if positives >= 3 else 0 if negatives >= 3 else None
+
+    flags, blocking = set(), set()
+    errors = n_votes != expected or any(v["status"] != "ok" for v in votes)
+
+    # Even split tie (e.g., 1-1 for 2 judges, 2-2 for 4 judges):
+    is_tie = valid and (positives == negatives and positives > 0)
+    tie_flag = f"tie_{positives}_{negatives}_moderation_resolved"
     mod_decision = moderation.get("decision") if (is_tie and isinstance(moderation, dict) and moderation.get("status") == "ok") else None
     if is_tie and mod_decision:
         candidate = 1 if mod_decision.get("flagged") else 0
-        flags.add("tie_2_2_moderation_resolved")
+        flags.add(tie_flag)
 
     if errors:
         blocking.add("incomplete_or_failed_votes")
     elif any(d["label"] is None for d in decisions):
         blocking.add("model_abstention")
     elif candidate is None:
-        blocking.add("tie_2_2")
+        blocking.add(f"tie_{positives}_{negatives}")
     elif min(positives, negatives) > 0 and policy["review_minority_vote"] and not is_tie:
         flags.add("minority_vote")
         if policy["block_minority_vote"]:
@@ -65,7 +79,7 @@ def aggregate(record, votes, policy, run_id, review=None, moderation=None):
         flags.add("subtype_disagreement")
         if policy.get("block_subtype_disagreement", True):
             blocking.add("subtype_disagreement")
-    unanimous = valid and (positives == 4 or negatives == 4)
+    unanimous = valid and (positives == expected or negatives == expected)
     audit = int(digest({"run": run_id, "content": record["content_hash"]})[:8], 16) / 2**32
     if unanimous and audit < policy["audit_unanimous_rate"]:
         flags.add("unanimous_audit_sample")
